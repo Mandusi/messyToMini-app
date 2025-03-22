@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Boogaloo&family=Kablammo:MORF@26&family=Lacquer&family=Moirai+One&family=Patrick+Hand&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&family=Vibes&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	html {
+		font-family: 'Sour Gummy', system-ui, sans-serif;
+	}
+}
