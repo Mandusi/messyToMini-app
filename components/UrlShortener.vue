@@ -1,30 +1,35 @@
 <template>
-	<div class="flex-col flex items-center">
+	<div class="flex-col flex items-center gap-3">
 		<form
 			class="flex flex-col w-[350px] justify-center gap-3 text-center"
 			@submit.prevent="shorten"
 		>
 			<input v-model="url" type="text" placeholder="Paste the url here" />
 			<button
-				class="bg-[#FFD700] rounded-full shadow-inner shadow-orange-200 p-2 font-bold"
+				class="bg-[#FFD700] rounded-full shadow-inner text-[#512f16] shadow-orange-200 p-2 font-bold"
 				@click="createAccount"
-				>Shorten</button
+				>SHORTEN</button
 			>
 		</form>
-		<div class="w-full flex justify-center">
-			<table class="w-5/6 max-w-max m-10 zigzag">
+		<div class="w-full flex justify-center rounded-2xl overflow-hidden">
+			<table class="zigzag w-[350px]">
 				<thead>
 					<tr>
-						<th>URL</th>
 						<th>ShortURL</th>
 						<th>Clicks</th>
+						<th>URL</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr v-for="(slug, index) in slugs" :key="index" class="m-5">
-						<td>{{ slug.url }}</td>
 						<td>{{ slug.slug }}</td>
 						<td>{{ slug.clicks }}</td>
+						<td>{{ slug.url }}</td>
+					</tr>
+					<tr>
+						<td>youtube</td>
+						<td>youtube</td>
+						<td>youtube</td>
 					</tr>
 					<tr>
 						<td>youtube</td>
@@ -51,18 +56,35 @@ async function shorten() {
 
 	const short = {
 		url: res.context.url,
-		slug: runtimeConfig.public.API + res.slug,
+		slug: res.slug,
 		clicks: 0,
 	}
 
 	slugs.value.push(short)
 }
 
-shorten()
+async function getAllLinks() {
+	const { data } = await useFetch('/link/', {
+		method: 'GET',
+		baseURL: runtimeConfig.public.API,
+	})
+	const links = data.value.data
+	links.forEach(link => {
+		slugs.value.push({
+			url: link.context.url,
+			slug: link.slug,
+			clicks: 0,
+		})
+	})
+	console.log(links)
+}
+
+getAllLinks()
 </script>
 
 <style scoped>
 input {
+	height: 36px;
 	border-radius: 1rem;
 	padding: 0.25rem;
 	padding-left: 1rem;
@@ -79,7 +101,6 @@ h1 {
 }
 
 table {
-	font-family: sans-serif;
 	th,
 	td {
 		padding: 0.25em 0.5em;
@@ -92,7 +113,7 @@ table {
 		background-color: #eee;
 	}
 	th {
-		background-color: #009;
+		background-color: rgb(122, 46, 14);
 		color: #fff;
 		padding: 0.5em;
 	}

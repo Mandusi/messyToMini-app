@@ -4,11 +4,9 @@
 			<img src="/mirket-yellow.png" alt="mirket" class="" />
 		</div>
 
-		<h1 class="text-6xl p-10 text-[#1c1324]">
-			<span class="text-7xl">Messy</span>
-			to
-			<span class="text-7xl">Mini</span>
-		</h1>
+		<div class="w-32">
+			<img src="/logo.png" alt="logo" />
+		</div>
 
 		<div
 			class="max-w-6xl w-fit z-10 backdrop-blur-md flex flex-col gap-4 p-10 h-full justify-center items-center"
@@ -16,7 +14,7 @@
 			<div class="flex flex-col items-center justify-center gap-4">
 				<div class="w-[350PX]">
 					<h1 class="text-4xl font-boogaloo text-center text-[#512f16] w-fit"
-						>GET RID OF CROOKED L000OOOOO000NG LINKS!
+						>GET RID OF CROOKED LOOOOO000OOONG LINKS!
 					</h1>
 				</div>
 				<div
@@ -35,7 +33,7 @@
 					<div class="w-5">
 						<img src="../assets/icons/icons8-search.svg" alt="search" />
 					</div>
-					<span>coolqr.io/ASDc2R</span>
+					<span>mini.mirket.dev/ASDc2R</span>
 				</div>
 				<!-- <div class="flex justify-start w-full items-start">
 					<h1 class="text-2xl font-boogaloo w-fit pl-2">into&nbsp;</h1>

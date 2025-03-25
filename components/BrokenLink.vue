@@ -16,7 +16,7 @@
 			<div class="w-5">
 				<img src="../assets/icons/icons8-search.svg" alt="search" />
 			</div>
-			<span>coolqr.io/ASDc2R</span>
+			<span>mini.mirket.dev/pretty</span>
 		</div>
 	</div>
 </template>
