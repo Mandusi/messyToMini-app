@@ -68,13 +68,14 @@
 				<input v-model="payload.password" type="password" placeholder="Password" />
 				<button
 					class="bg-[#FFD700] rounded-full shadow-inner shadow-orange-200 p-2 font-bold"
-					@click="createAccount"
+					@click.prevent="createAccountHandler"
 					>Create Account</button
 				>
 			</form>
 			<div class="flex text-[#512f16] flex-col justify-center items-center">
+				<div v-if="errorMessage" class="text-red-800">{{ errorMessage }}</div>
 				<NuxtLink to="/login">Already have an account? Log In!</NuxtLink>
-				<NuxtLink to="/">Later</NuxtLink>
+				<button @click="redirectToGuestAccount">Later</button>
 			</div>
 		</div>
 	</div>
@@ -89,24 +90,33 @@ const payload = ref({
 	password: '',
 })
 
+const errorMessage = ref('')
+
 const config = useRuntimeConfig()
 
-async function createAccount() {
+async function createAccountHandler() {
 	const user = {
-		username: payload.value.username,
-		email: payload.value.email,
-		firstName: payload.value.firstName,
-		lastName: payload.value.lastName,
+		username: payload.value.username.trim(),
+		email: payload.value.email.trim(),
+		firstName: payload.value.firstName.trim(),
+		lastName: payload.value.lastName.trim(),
 		password: payload.value.password,
 	}
 
-	useFetch('/auth/sign-up', {
-		baseURL: config.public.API,
-		method: 'POST',
-		body: user,
-	})
-
-	await navigateTo('/login')
+	try {
+		const response = await useFetch('/auth/sign-up', {
+			baseURL: config.public.API,
+			method: 'POST',
+			body: user,
+		})
+		if (response?.error?.value?.data) {
+			errorMessage.value = response.error.value.data.error
+		}
+		console.log(response.data.value.data)
+		await navigateTo('/login')
+	} catch (error) {
+		console.log(error)
+	}
 }
 </script>
 

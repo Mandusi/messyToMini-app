@@ -36,22 +36,31 @@
 			</div>
 
 			<form action="" class="flex flex-col w-[320px] gap-4 mt-5">
-				<input v-model="payload.username" type="text" placeholder="username" required />
+				<input
+					v-model="payload.username"
+					type="text"
+					name="user"
+					placeholder="username"
+					required
+				/>
 
 				<input
 					v-model="payload.password"
 					type="password"
 					placeholder="Password"
+					name="password"
 					required
 				/>
 				<button
 					type="submit"
 					class="bg-orange-500 rounded-full p-2 text-white font-bold"
-					@click="login"
+					@click.prevent="login"
 					>Login</button
 				>
 			</form>
-
+			<div>
+				<span class="text-red-500">{{ errorMessage }}</span>
+			</div>
 			<NuxtLink to="/signup">Don't have an account? Sign Up!</NuxtLink>
 			<NuxtLink to="/">Continue without Signing Up</NuxtLink>
 		</div>
@@ -63,15 +72,27 @@ const config = useRuntimeConfig()
 
 const payload = ref({ username: '', password: '' })
 
+const errorMessage = ref('')
+
+const token = useState('token', () => null)
+
 async function login() {
+	// Clear error message
+	errorMessage.value = ''
+
 	const user = { username: payload.value.username, password: payload.value.password }
 
-	useFetch('/auth/login', {
+	const { error, data, status } = await useFetch('/auth/login', {
 		baseURL: config.public.API,
 		method: 'POST',
 		body: user,
-		onResponse: await navigateTo('/'),
 	})
+
+	errorMessage.value = await error?.value?.data?.error
+
+	token.value = await data?.value?.token
+
+	if (status.value === 'success') await navigateTo('/')
 }
 </script>
 

@@ -7,79 +7,90 @@
 			<input v-model="url" type="text" placeholder="Paste the url here" />
 			<button
 				class="bg-[#FFD700] rounded-full shadow-inner text-[#512f16] shadow-orange-200 p-2 font-bold"
-				@click="createAccount"
+				@click="shorten"
 				>SHORTEN</button
 			>
 		</form>
-		<div class="w-full flex justify-center rounded-2xl overflow-hidden">
-			<table class="zigzag w-[350px]">
-				<thead>
-					<tr>
-						<th>ShortURL</th>
-						<th>Clicks</th>
-						<th>URL</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(slug, index) in slugs" :key="index" class="m-5">
-						<td>{{ slug.slug }}</td>
-						<td>{{ slug.clicks }}</td>
-						<td>{{ slug.url }}</td>
-					</tr>
-					<tr>
-						<td>youtube</td>
-						<td>youtube</td>
-						<td>youtube</td>
-					</tr>
-					<tr>
-						<td>youtube</td>
-						<td>youtube</td>
-						<td>youtube</td>
-					</tr>
-				</tbody>
-			</table>
+		<div
+			v-for="link in miniLinks"
+			:key="link.id"
+			class="flex items-center justify-between gap-3 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
+			@click="linkClickHandler(link.id)"
+		>
+			<div class="h-10 w-10"><img :src="getFavicon('chatgpt')" class="w-10" /></div>
+			<div class="flex flex-col">
+				<div class="">
+					<span>{{ link.slug }}</span>
+				</div>
+				<div class="text-slate-500 flex justify-between text-sm">
+					<span>{{ useTimeAgo(new Date(link.createdAt)) }}</span>
+					<span>Clicks: {{ link.views.length }}</span>
+				</div>
+			</div>
+			<div class="h-8 w-8">
+				<img v-if="!isCopied" src="/copy.svg" alt="copy-icon" />
+				<img v-show="isCopied" src="/copy-success.svg" alt="copied-icon" />
+			</div>
 		</div>
 	</div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { useTimeAgo } from '@/composables/useTimeAgo'
 const runtimeConfig = useRuntimeConfig()
-const url = ref('')
-const slugs = ref([])
-async function shorten() {
-	const { data } = await useFetch(`/link`, {
-		baseURL: runtimeConfig.public.API,
-		method: 'POST',
-		body: { url: url.value, type: 'url' },
-	})
-	const res = data.value.data
 
-	const short = {
-		url: res.context.url,
-		slug: res.slug,
-		clicks: 0,
+const url = ref('')
+const clickedLinkId = ref('')
+
+interface LinkType {
+	slug: string
+	url: string
+	id: string
+	type: string
+	createdAt: Date
+	views: []
+}
+
+const props = defineProps({ miniLinks: Array<LinkType> })
+
+const emit = defineEmits(['updateLinks'])
+
+async function shorten() {
+	let validUrl
+
+	// Check whether the url is valid or not
+	try {
+		validUrl = new URL(url.value)
+	} catch (error) {
+		throw new Error('Not a valid URL')
 	}
 
-	slugs.value.push(short)
-}
+	const domain = validUrl.hostname
 
-async function getAllLinks() {
-	const { data } = await useFetch('/link/', {
-		method: 'GET',
+	const { data, error } = await useFetch('/link', {
 		baseURL: runtimeConfig.public.API,
+		method: 'POST',
+		body: { url: url.value, type: domain },
 	})
-	const links = data.value.data
-	links.forEach(link => {
-		slugs.value.push({
-			url: link.context.url,
-			slug: link.slug,
-			clicks: 0,
-		})
-	})
-	console.log(links)
+
+	emit('updateLinks')
+
+	if (error.value) console.error(error.value.data)
+
+	console.log(data.value)
 }
 
-getAllLinks()
+const isCopied = ref(false)
+
+function linkClickHandler(id: string) {
+	clickedLinkId.value = id
+	console.log(clickedLinkId)
+	isCopied.value = true
+	navigator.clipboard.writeText('mini.mirket.dev/farty-party')
+}
+
+const getFavicon = (domain: string) =>
+	`https://www.google.com/s2/favicons?sz=64&domain=${domain}`
 </script>
 
 <style scoped>

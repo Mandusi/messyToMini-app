@@ -25,12 +25,37 @@
 				</p>
 			</div>
 			<BrokenLink />
-			<UrlShortener />
+			<UrlShortener :mini-links="miniLinks" @update-links="getUserLinks" />
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const config = useRuntimeConfig()
+
+const miniLinks = ref([])
+
+const token = useState('token')
+
+const isLoggedIn = Boolean(token.value)
+
+console.log(isLoggedIn)
+
+if (isLoggedIn) await getUserLinks()
+
+async function getUserLinks() {
+	const { data, error } = await useFetch('/auth/me', {
+		baseURL: config.public.API,
+		method: 'GET',
+		headers: {
+			authorization: `Bearer ${token.value}`,
+		},
+	})
+	miniLinks.value = data?.value?.data
+	if (error.value?.data) console.log(error.value?.data)
+	console.log(data.value)
+}
+</script>
 <style scoped>
 .gradiant-bg {
 	background: rgb(54, 57, 59);
