@@ -25,7 +25,7 @@
 				</p>
 			</div>
 			<BrokenLink />
-			<UrlShortener :mini-links="miniLinks" @update-links="getUserLinks" />
+			<UrlShortener :mini-links="miniLinks" :token="token" @update-links="getUserLinks" />
 		</div>
 	</div>
 </template>
@@ -37,11 +37,30 @@ const miniLinks = ref([])
 
 const token = useState('token')
 
-const isLoggedIn = Boolean(token.value)
+authorize()
 
-console.log(isLoggedIn)
+async function authorize() {
+	const isLoggedIn = Boolean(token.value)
 
-if (isLoggedIn) await getUserLinks()
+	console.log(isLoggedIn)
+	if (isLoggedIn) await getUserLinks()
+	else {
+		const { data, error } = await useFetch('/auth/refresh-token', {
+			baseURL: config.public.API,
+			method: 'GET',
+			credentials: 'include',
+		})
+
+		if (error.value?.message) {
+			console.log('error:')
+			console.dir(error)
+		}
+		if (data.value) {
+			console.log('data:')
+			console.dir(data.value)
+		}
+	}
+}
 
 async function getUserLinks() {
 	const { data, error } = await useFetch('/auth/me', {
@@ -51,7 +70,7 @@ async function getUserLinks() {
 			authorization: `Bearer ${token.value}`,
 		},
 	})
-	miniLinks.value = data?.value?.data
+	miniLinks.value = (data?.value as any).data
 	if (error.value?.data) console.log(error.value?.data)
 	console.log(data.value)
 }

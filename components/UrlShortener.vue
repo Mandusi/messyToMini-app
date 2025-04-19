@@ -10,17 +10,18 @@
 				@click="shorten"
 				>SHORTEN</button
 			>
+			<div v-if="errorMessage" class="text-red-800"> {{ errorMessage }}</div>
 		</form>
 		<div
 			v-for="link in miniLinks"
 			:key="link.id"
-			class="flex items-center justify-between gap-3 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
-			@click="linkClickHandler(link.id)"
+			class="flex items-center justify-between gap-6 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
+			@click="linkClickHandler(link.id, link.slug)"
 		>
-			<div class="h-10 w-10"><img :src="getFavicon('chatgpt')" class="w-10" /></div>
-			<div class="flex flex-col">
+			<div class="h-10 w-10"><img :src="getFavicon(link.type)" class="w-10" /></div>
+			<div class="flex flex-col grow">
 				<div class="">
-					<span>{{ link.slug }}</span>
+					<span>mini.mirket.dev/{{ link.slug }}</span>
 				</div>
 				<div class="text-slate-500 flex justify-between text-sm">
 					<span>{{ useTimeAgo(new Date(link.createdAt)) }}</span>
@@ -28,8 +29,12 @@
 				</div>
 			</div>
 			<div class="h-8 w-8">
-				<img v-if="!isCopied" src="/copy.svg" alt="copy-icon" />
-				<img v-show="isCopied" src="/copy-success.svg" alt="copied-icon" />
+				<img v-if="clickedLinkId !== link.id" src="/copy.svg" alt="copy-icon" />
+				<img
+					v-show="clickedLinkId === link.id"
+					src="/copy-success.svg"
+					alt="copied-icon"
+				/>
 			</div>
 		</div>
 	</div>
@@ -41,6 +46,7 @@ const runtimeConfig = useRuntimeConfig()
 
 const url = ref('')
 const clickedLinkId = ref('')
+const errorMessage = ref('')
 
 interface LinkType {
 	slug: string
@@ -51,17 +57,19 @@ interface LinkType {
 	views: []
 }
 
-const props = defineProps({ miniLinks: Array<LinkType> })
+const props = defineProps({
+	miniLinks: { type: Array<LinkType>, default: [] },
+})
 
 const emit = defineEmits(['updateLinks'])
 
 async function shorten() {
-	let validUrl
-
 	// Check whether the url is valid or not
+	let validUrl
 	try {
 		validUrl = new URL(url.value)
 	} catch (error) {
+		errorMessage.value = 'Please enter a valid URL!'
 		throw new Error('Not a valid URL')
 	}
 
@@ -70,6 +78,9 @@ async function shorten() {
 	const { data, error } = await useFetch('/link', {
 		baseURL: runtimeConfig.public.API,
 		method: 'POST',
+		headers: {
+			authorization: `Bearer ${props.token}`,
+		},
 		body: { url: url.value, type: domain },
 	})
 
@@ -80,13 +91,9 @@ async function shorten() {
 	console.log(data.value)
 }
 
-const isCopied = ref(false)
-
-function linkClickHandler(id: string) {
+function linkClickHandler(id: string, slug: string) {
 	clickedLinkId.value = id
-	console.log(clickedLinkId)
-	isCopied.value = true
-	navigator.clipboard.writeText('mini.mirket.dev/farty-party')
+	navigator.clipboard.writeText(`${runtimeConfig.public.API}/link/${slug}`)
 }
 
 const getFavicon = (domain: string) =>
