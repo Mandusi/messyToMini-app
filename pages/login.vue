@@ -68,31 +68,20 @@
 </template>
 
 <script setup>
-const config = useRuntimeConfig()
+import { useAuthStore } from '@/store/auth'
+const authStore = useAuthStore()
 
-const payload = ref({ username: '', password: '' })
+const payload = ref({
+	username: '',
+	password: '',
+})
 
 const errorMessage = ref('')
 
-const token = useState('token', () => null)
-
 async function login() {
-	// Clear error message
-	errorMessage.value = ''
-
-	const user = { username: payload.value.username, password: payload.value.password }
-
-	const { error, data, status } = await useFetch('/auth/login', {
-		baseURL: config.public.API,
-		method: 'POST',
-		body: user,
-	})
-
-	errorMessage.value = await error?.value?.data?.error
-
-	token.value = await data?.value?.token
-
-	if (status.value === 'success') await navigateTo('/')
+	const error = await authStore.login(payload.value.username, payload.value.password)
+	if (!error) await navigateTo('/')
+	else errorMessage.value = error
 }
 </script>
 

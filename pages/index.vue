@@ -31,22 +31,17 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/store/auth'
+
 const config = useRuntimeConfig()
-
 const miniLinks = ref([])
-
-const token = useState('token')
-
-authorize()
+const isLoggedIn = useAuthStore().isLoggedIn
 
 async function authorize() {
-	const isLoggedIn = Boolean(token.value)
-
-	console.log(isLoggedIn)
 	if (isLoggedIn) await getUserLinks()
 	else {
 		const { data, error } = await useFetch('/auth/refresh-token', {
-			baseURL: config.public.API,
+			baseURL: config.public.API as string,
 			method: 'GET',
 			credentials: 'include',
 		})
@@ -64,16 +59,18 @@ async function authorize() {
 
 async function getUserLinks() {
 	const { data, error } = await useFetch('/auth/me', {
-		baseURL: config.public.API,
+		baseURL: config.public.API as string,
 		method: 'GET',
 		headers: {
-			authorization: `Bearer ${token.value}`,
+			authorization: `Bearer ${useAuthStore().token.value}`,
 		},
 	})
 	miniLinks.value = (data?.value as any).data
 	if (error.value?.data) console.log(error.value?.data)
 	console.log(data.value)
 }
+
+authorize()
 </script>
 <style scoped>
 .gradiant-bg {

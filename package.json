@@ -10,8 +10,6 @@
 	},
 	"devDependencies": {
 		"@nuxtjs/tailwindcss": "^6.10.3",
-		"@pinia-plugin-persistedstate/nuxt": "^1.2.0",
-		"@types/google.maps": "^3.55.2",
 		"@types/lodash": "^4.14.202",
 		"@types/node": "^20.10.6",
 		"@typescript-eslint/eslint-plugin": "^6.16.0",
@@ -30,6 +28,7 @@
 		"@googlemaps/js-api-loader": "^1.16.2",
 		"@pinia/nuxt": "^0.5.1",
 		"lodash": "^4.17.21",
-		"pinia": "^2.1.7"
+		"pinia": "^2.1.7",
+		"pinia-plugin-persistedstate": "^4.2.0"
 	}
 }

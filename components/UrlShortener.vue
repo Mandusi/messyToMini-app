@@ -40,7 +40,7 @@
 	</div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useTimeAgo } from '@/composables/useTimeAgo'
 const runtimeConfig = useRuntimeConfig()
 
@@ -48,17 +48,8 @@ const url = ref('')
 const clickedLinkId = ref('')
 const errorMessage = ref('')
 
-interface LinkType {
-	slug: string
-	url: string
-	id: string
-	type: string
-	createdAt: Date
-	views: []
-}
-
 const props = defineProps({
-	miniLinks: { type: Array<LinkType>, default: [] },
+	miniLinks: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['updateLinks'])
@@ -91,13 +82,12 @@ async function shorten() {
 	console.log(data.value)
 }
 
-function linkClickHandler(id: string, slug: string) {
+function linkClickHandler(id, slug) {
 	clickedLinkId.value = id
 	navigator.clipboard.writeText(`${runtimeConfig.public.API}/link/${slug}`)
 }
 
-const getFavicon = (domain: string) =>
-	`https://www.google.com/s2/favicons?sz=64&domain=${domain}`
+const getFavicon = domain => `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
 </script>
 
 <style scoped>

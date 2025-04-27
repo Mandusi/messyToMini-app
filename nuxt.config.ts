@@ -13,7 +13,7 @@ export default defineNuxtConfig({
 				{
 					hid: 'description',
 					name: 'description',
-					content: 'Novaya UMS',
+					content: '',
 				},
 			],
 			link: [{ rel: 'icon', type: 'image/x-icon', href: '/logo-min.svg' }],
@@ -24,7 +24,7 @@ export default defineNuxtConfig({
 		transpile: ['primevue', '@vuepic/vue-datepicker'],
 	},
 
-	modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', '@pinia-plugin-persistedstate/nuxt'],
+	modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', 'pinia-plugin-persistedstate/nuxt'],
 
 	// Component auto import
 	components: [
