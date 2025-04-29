@@ -5,14 +5,30 @@
 				<img src="/mirket-yellow.png" alt="mirket" />
 			</div>
 		</div>
-		<div class="flex flex-col gap-3 items-center z-10">
+		<div class="flex flex-col gap-3 items-center z-10 h-screen">
 			<div class="flex items-center">
 				<Seperator />
-				<NuxtLink to="/signup" class="p-3 text-xl text-[#931b1b]">SIGNUP</NuxtLink>
+				<div class="flex justify-center">
+					<NuxtLink v-if="isLoggedIn" to="/signup" class="p-3 text-xl text-[#931b1b]"
+						>MY MINIS</NuxtLink
+					>
+					<NuxtLink v-else to="/signup" class="p-3 text-xl text-[#931b1b]"
+						>SIGNUP</NuxtLink
+					>
+				</div>
 				<Seperator />
 				<img src="/logo.png" alt="logo" class="w-32" />
 				<Seperator />
-				<NuxtLink to="/login" class="p-3 text-xl text-[#931b1b]">LOGIN</NuxtLink>
+				<div class="flex justify-center">
+					<NuxtLink
+						v-if="isLoggedIn"
+						to="/login"
+						class="p-3 text-xl text-[#931b1b]"
+						@click="useAuthStore().logout"
+						>LOG OUT</NuxtLink
+					>
+					<NuxtLink v-else to="/login" class="p-3 text-xl text-[#931b1b]">LOGIN</NuxtLink>
+				</div>
 				<Seperator />
 			</div>
 			<div class="flex flex-col items-center">
@@ -25,52 +41,15 @@
 				</p>
 			</div>
 			<BrokenLink />
-			<UrlShortener :mini-links="miniLinks" :token="token" @update-links="getUserLinks" />
+			<UrlShortener class="flex grow" />
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { useAuthStore } from '~/store/auth'
 
-const config = useRuntimeConfig()
-const miniLinks = ref([])
 const isLoggedIn = useAuthStore().isLoggedIn
-
-async function authorize() {
-	if (isLoggedIn) await getUserLinks()
-	else {
-		const { data, error } = await useFetch('/auth/refresh-token', {
-			baseURL: config.public.API as string,
-			method: 'GET',
-			credentials: 'include',
-		})
-
-		if (error.value?.message) {
-			console.log('error:')
-			console.dir(error)
-		}
-		if (data.value) {
-			console.log('data:')
-			console.dir(data.value)
-		}
-	}
-}
-
-async function getUserLinks() {
-	const { data, error } = await useFetch('/auth/me', {
-		baseURL: config.public.API as string,
-		method: 'GET',
-		headers: {
-			authorization: `Bearer ${useAuthStore().token.value}`,
-		},
-	})
-	miniLinks.value = (data?.value as any).data
-	if (error.value?.data) console.log(error.value?.data)
-	console.log(data.value)
-}
-
-authorize()
 </script>
 <style scoped>
 .gradiant-bg {

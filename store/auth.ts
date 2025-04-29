@@ -46,7 +46,7 @@ export const useAuthStore = defineStore(
 			refreshToken,
 			user,
 			login,
-
+			logout,
 			isLoggedIn: computed(() => {
 				return !!token.value
 			}),

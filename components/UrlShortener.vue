@@ -12,29 +12,34 @@
 			>
 			<div v-if="errorMessage" class="text-red-800"> {{ errorMessage }}</div>
 		</form>
-		<div
-			v-for="link in miniLinks"
-			:key="link.id"
-			class="flex items-center justify-between gap-6 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
-			@click="linkClickHandler(link.id, link.slug)"
-		>
-			<div class="h-10 w-10"><img :src="getFavicon(link.type)" class="w-10" /></div>
-			<div class="flex flex-col grow">
-				<div class="">
-					<span>mini.mirket.dev/{{ link.slug }}</span>
+		<div class="flex overflow-auto relative h-[390px]">
+			<div class="end-gradiant fixed h-32 w-full bottom-0"></div>
+			<div class="flex flex-col gap-3">
+				<div
+					v-for="link in miniLinks"
+					:key="link.id"
+					class="flex items-center justify-between gap-6 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
+					@click="linkClickHandler(link.id, link.slug)"
+				>
+					<div class="h-10 w-10"><img :src="getFavicon(link.type)" class="w-10" /></div>
+					<div class="flex flex-col grow">
+						<div class="">
+							<span>mini.mirket.dev/{{ link.slug }}</span>
+						</div>
+						<div class="text-slate-500 flex justify-between text-sm">
+							<span>{{ useTimeAgo(new Date(link.createdAt)) }}</span>
+							<span>Clicks: {{ link.views?.length || 'Log in' }}</span>
+						</div>
+					</div>
+					<div class="h-8 w-8">
+						<img v-if="clickedLinkId !== link.id" src="/copy.svg" alt="copy-icon" />
+						<img
+							v-show="clickedLinkId === link.id"
+							src="/copy-success.svg"
+							alt="copied-icon"
+						/>
+					</div>
 				</div>
-				<div class="text-slate-500 flex justify-between text-sm">
-					<span>{{ useTimeAgo(new Date(link.createdAt)) }}</span>
-					<span>Clicks: {{ link.views.length }}</span>
-				</div>
-			</div>
-			<div class="h-8 w-8">
-				<img v-if="clickedLinkId !== link.id" src="/copy.svg" alt="copy-icon" />
-				<img
-					v-show="clickedLinkId === link.id"
-					src="/copy-success.svg"
-					alt="copied-icon"
-				/>
 			</div>
 		</div>
 	</div>
@@ -42,44 +47,95 @@
 
 <script setup>
 import { useTimeAgo } from '@/composables/useTimeAgo'
-const runtimeConfig = useRuntimeConfig()
+import { useAuthStore } from '~/store/auth'
+const config = useRuntimeConfig()
 
 const url = ref('')
 const clickedLinkId = ref('')
 const errorMessage = ref('')
+const miniLinks = ref([])
+const isLoggedIn = useAuthStore().isLoggedIn
 
-const props = defineProps({
-	miniLinks: { type: Array, default: () => [] },
-})
+async function authorize() {
+	if (isLoggedIn) await getUserLinks()
+	else {
+		const { data, error } = await useFetch('/auth/refresh-token', {
+			baseURL: config.public.API,
+			method: 'GET',
+			credentials: 'include',
+		})
 
-const emit = defineEmits(['updateLinks'])
+		if (error.value?.message) {
+			console.log('error:')
+			console.dir(error)
+		}
+		if (data.value) {
+			console.log('data:')
+			console.dir(data.value)
+		}
+	}
+}
+
+authorize()
 
 async function shorten() {
 	// Check whether the url is valid or not
+	const validUrl = urlValidation(url.value)
+
+	const domain = validUrl.hostname
+
+	if (!isLoggedIn) {
+		const miniLink = await guestCreateLink(domain)
+		miniLinks.value.push(miniLink.data.value.data)
+	} else {
+		await createLink(domain)
+		getUserLinks()
+	}
+}
+
+async function createLink(domain) {
+	const res = await useFetch('/link', {
+		baseURL: config.public.API,
+		method: 'POST',
+		headers: {
+			authorization: `Bearer ${useAuthStore().token}`,
+		},
+		body: { url: url.value, type: domain },
+	})
+	return res
+}
+
+async function guestCreateLink(domain) {
+	const res = await useFetch('/link/guest', {
+		baseURL: config.public.API,
+		method: 'POST',
+		body: { url: url.value, type: domain },
+	})
+	console.log(res)
+	return res
+}
+
+async function getUserLinks() {
+	const { data, error } = await useFetch('/auth/me', {
+		baseURL: config.public.API,
+		method: 'GET',
+		headers: {
+			authorization: `Bearer ${useAuthStore().token}`,
+		},
+	})
+	if (data.value?.data) miniLinks.value = (data?.value).data
+	if (error.value?.data) console.log(error.value?.data)
+}
+
+function urlValidation(url) {
 	let validUrl
 	try {
-		validUrl = new URL(url.value)
+		validUrl = new URL(url)
 	} catch (error) {
 		errorMessage.value = 'Please enter a valid URL!'
 		throw new Error('Not a valid URL')
 	}
-
-	const domain = validUrl.hostname
-
-	const { data, error } = await useFetch('/link', {
-		baseURL: runtimeConfig.public.API,
-		method: 'POST',
-		headers: {
-			authorization: `Bearer ${props.token}`,
-		},
-		body: { url: url.value, type: domain },
-	})
-
-	emit('updateLinks')
-
-	if (error.value) console.error(error.value.data)
-
-	console.log(data.value)
+	return validUrl
 }
 
 function linkClickHandler(id, slug) {
@@ -125,5 +181,14 @@ table {
 		color: #fff;
 		padding: 0.5em;
 	}
+}
+
+.end-gradiant {
+	background: #eab522;
+	background: linear-gradient(
+		0deg,
+		rgba(234, 181, 34, 1) 19%,
+		rgba(234, 181, 34, 0) 100%
+	);
 }
 </style>

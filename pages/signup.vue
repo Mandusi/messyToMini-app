@@ -75,7 +75,7 @@
 			<div class="flex text-[#512f16] flex-col justify-center items-center">
 				<div v-if="errorMessage" class="text-red-800">{{ errorMessage }}</div>
 				<NuxtLink to="/login">Already have an account? Log In!</NuxtLink>
-				<button @click="redirectToGuestAccount">Later</button>
+				<NuxtLink to="/">Continue without Signing Up</NuxtLink>
 			</div>
 		</div>
 	</div>
