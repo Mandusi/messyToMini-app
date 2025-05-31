@@ -1,13 +1,10 @@
 <template>
 	<div class="flex-col flex items-center gap-3">
-		<form
-			class="flex flex-col w-[350px] justify-center gap-3 text-center"
-			@submit.prevent="shorten"
-		>
+		<form class="flex flex-col w-[350px] justify-center gap-3 text-center">
 			<input v-model="url" type="text" placeholder="Paste the url here" />
 			<button
 				class="bg-[#FFD700] rounded-full shadow-inner text-[#512f16] shadow-orange-200 p-2 font-bold"
-				@click="shorten"
+				@click.prevent="shorten"
 				>SHORTEN</button
 			>
 			<div v-if="errorMessage" class="text-red-800"> {{ errorMessage }}</div>
@@ -18,7 +15,7 @@
 				<div
 					v-for="link in miniLinks"
 					:key="link.id"
-					class="flex items-center justify-between gap-6 rounded-2xl p-2 bg-[#e5ece9] w-[350px]"
+					class="flex items-center justify-between gap-6 rounded-2xl p-2 bg-[#e5ece9] w-[350px] border border-slate-700"
 					@click="linkClickHandler(link.id, link.slug)"
 				>
 					<div class="h-10 w-10"><img :src="getFavicon(link.type)" class="w-10" /></div>
@@ -28,7 +25,7 @@
 						</div>
 						<div class="text-slate-500 flex justify-between text-sm">
 							<span>{{ useTimeAgo(new Date(link.createdAt)) }}</span>
-							<span>Clicks: {{ link.views?.length || 'Log in' }}</span>
+							<span>Clicks: {{ isLoggedIn ? link.views?.length : 'Login' }}</span>
 						</div>
 					</div>
 					<div class="h-8 w-8">
@@ -56,6 +53,27 @@ const errorMessage = ref('')
 const miniLinks = ref([])
 const isLoggedIn = useAuthStore().isLoggedIn
 
+async function shorten() {
+	// Clear error message
+	errorMessage.value = ''
+
+	// Check whether the url is valid or not
+	const validUrl = urlValidation(url.value)
+
+	// Get url type
+	const domain = validUrl.hostname
+
+	// If user is not logged in, create an anonimus minilink and save to local storage
+	if (!isLoggedIn) {
+		const miniLink = await guestCreateLink(domain)
+		miniLinks.value.push(miniLink.data.value.data)
+		console.log(miniLinks.value)
+	} else {
+		await createLink(domain)
+		getUserLinks()
+	}
+}
+
 async function authorize() {
 	if (isLoggedIn) await getUserLinks()
 	else {
@@ -65,31 +83,9 @@ async function authorize() {
 			credentials: 'include',
 		})
 
-		if (error.value?.message) {
-			console.log('error:')
-			console.dir(error)
+		if (error.value) {
+			errorMessage.value = 'You are using Guest Mode'
 		}
-		if (data.value) {
-			console.log('data:')
-			console.dir(data.value)
-		}
-	}
-}
-
-authorize()
-
-async function shorten() {
-	// Check whether the url is valid or not
-	const validUrl = urlValidation(url.value)
-
-	const domain = validUrl.hostname
-
-	if (!isLoggedIn) {
-		const miniLink = await guestCreateLink(domain)
-		miniLinks.value.push(miniLink.data.value.data)
-	} else {
-		await createLink(domain)
-		getUserLinks()
 	}
 }
 
@@ -111,7 +107,6 @@ async function guestCreateLink(domain) {
 		method: 'POST',
 		body: { url: url.value, type: domain },
 	})
-	console.log(res)
 	return res
 }
 
@@ -124,7 +119,7 @@ async function getUserLinks() {
 		},
 	})
 	if (data.value?.data) miniLinks.value = (data?.value).data
-	if (error.value?.data) console.log(error.value?.data)
+	if (error.value?.data) errorMessage.value = error.value?.data
 }
 
 function urlValidation(url) {
@@ -140,10 +135,14 @@ function urlValidation(url) {
 
 function linkClickHandler(id, slug) {
 	clickedLinkId.value = id
-	navigator.clipboard.writeText(`${runtimeConfig.public.API}/link/${slug}`)
+	navigator.clipboard.writeText(`${config.public.API}/link/${slug}`)
 }
 
-const getFavicon = domain => `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
+function getFavicon(domain) {
+	return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`
+}
+
+authorize()
 </script>
 
 <style scoped>

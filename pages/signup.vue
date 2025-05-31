@@ -3,9 +3,10 @@
 		<div class="max-w-[1200px] absolute bottom-0 left-0">
 			<img src="/mirket-yellow.png" alt="mirket" class="" />
 		</div>
-
-		<div class="w-32">
-			<img src="/logo.png" alt="logo" />
+		<div class="flex justify-center items-center w-full">
+			<Seperator />
+			<img src="/logo.png" alt="logo" class="w-32" />
+			<Seperator />
 		</div>
 
 		<div

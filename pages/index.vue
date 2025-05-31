@@ -9,7 +9,7 @@
 			<div class="flex items-center">
 				<Seperator />
 				<div class="flex justify-center">
-					<NuxtLink v-if="isLoggedIn" to="/signup" class="p-3 text-xl text-[#931b1b]"
+					<NuxtLink v-if="isLoggedIn" to="/me" class="p-3 text-xl text-[#931b1b]"
 						>MY MINIS</NuxtLink
 					>
 					<NuxtLink v-else to="/signup" class="p-3 text-xl text-[#931b1b]"
