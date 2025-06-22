@@ -1,4 +1,6 @@
 import eslint from 'vite-plugin-eslint'
+import envdev from './env.dev'
+import envprod from './env.prod'
 
 export default defineNuxtConfig({
 	app: {
@@ -39,13 +41,11 @@ export default defineNuxtConfig({
 	ssr: false,
 
 	runtimeConfig: {
-		public: {
-			API: 'http://localhost:3099/api/v1',
-		},
+		public: process.env.NODE_ENV === 'development' ? { ...envdev } : { ...envprod },
 	},
 
 	devServer: {
-		port: 3098,
+		port: 3010,
 	},
 
 	typescript: {

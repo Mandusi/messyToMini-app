@@ -1,11 +1,14 @@
 module.exports = {
 	apps: [
 		{
-			name: 'ce.showcase',
-			port: '3000',
+			name: 'messytomini-app',
+			port: 3010,
 			exec_mode: 'cluster',
-			instances: 'max',
+			instances: 3,
 			script: './.output/server/index.mjs',
+			env: {
+				NODE_ENV: 'production',
+			},
 		},
 	],
 }
