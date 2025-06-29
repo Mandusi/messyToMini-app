@@ -85,7 +85,11 @@ async function login() {
 }
 </script>
 
-<style scoped>
+<style>
+body {
+	background-color: #0c253b;
+}
+
 input {
 	border-radius: 1rem;
 	padding: 0.25rem;

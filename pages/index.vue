@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col items-center bg-[#eab522] h-screen">
+	<div class="flex flex-col items-center bg-[#eab522] h-screen w-screen overflow-hidden">
 		<div class="absolute w-full h-full max-w-[1200px]">
 			<div class="absolute bottom-0 left-0 hidden md:block">
 				<img src="/mirket-yellow.png" alt="mirket" />
